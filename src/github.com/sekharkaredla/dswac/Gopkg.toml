@@ -40,3 +40,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/regcostajr/go-web3"
+
+[[constraint]]
+  name = "github.com/ethereum/go-ethereum"
+  version = "1.8.20"
