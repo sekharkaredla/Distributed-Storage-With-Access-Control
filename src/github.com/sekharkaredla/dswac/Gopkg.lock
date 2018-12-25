@@ -8,7 +8,7 @@
   packages = [
     ".",
     "edwards25519",
-    "extra25519",
+    "extra25519"
   ]
   pruneopts = "UT"
   revision = "5312a61534124124185d41f09206b9fef1d88403"
@@ -74,7 +74,7 @@
   name = "github.com/libp2p/go-libp2p-crypto"
   packages = [
     ".",
-    "pb",
+    "pb"
   ]
   pruneopts = "UT"
   revision = "274de1bb6c27780863df6b230c91324ab481dab2"
@@ -183,7 +183,7 @@
     "personal",
     "providers",
     "providers/util",
-    "utils",
+    "utils"
   ]
   pruneopts = "UT"
   revision = "555e83b623ddf0dc76ba43eab52b699b210f2d08"
@@ -210,7 +210,7 @@
   name = "golang.org/x/crypto"
   packages = [
     "blake2s",
-    "sha3",
+    "sha3"
   ]
   pruneopts = "UT"
   revision = "505ab145d0a99da450461ae2c1a9f6cd10d1f447"
@@ -229,7 +229,7 @@
   name = "golang.org/x/sys"
   packages = [
     "cpu",
-    "windows",
+    "windows"
   ]
   pruneopts = "UT"
   revision = "70b957f3b65e069b4930ea94e2721eefa0f8f695"
@@ -242,7 +242,7 @@
     "github.com/ipfs/go-ipfs-api",
     "github.com/regcostajr/go-web3",
     "github.com/regcostajr/go-web3/dto",
-    "github.com/regcostajr/go-web3/providers",
+    "github.com/regcostajr/go-web3/providers"
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
