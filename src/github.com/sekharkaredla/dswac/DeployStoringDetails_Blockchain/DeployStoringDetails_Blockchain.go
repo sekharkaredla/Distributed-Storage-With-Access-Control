@@ -20,7 +20,7 @@ func main() {
 	address, _, contract, err := DeployStoringDetails(
 		auth,
 		blockchain,
-		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmaWxlSGFzaCI6ImZpbGVfaGFzaCIsImZpbGVOYW1lIjoiZmlsZW5hbWUiLCJvd25lckhhc2giOiJ0ZXN0X293bmVyX2hhc2gifQ.qbNU91JBZy2dXOK5vjsWVDxARILQ1CVyONJLxB5Vl7I",
+		[]byte("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmaWxlSGFzaCI6ImZpbGVfaGFzaCIsImZpbGVOYW1lIjoiZmlsZW5hbWUiLCJvd25lckhhc2giOiJ0ZXN0X293bmVyX2hhc2gifQ.qbNU91JBZy2dXOK5vjsWVDxARILQ1CVyONJLxB5Vl7I"),
 	)
 
 	blockchain.Commit()
@@ -36,6 +36,6 @@ func main() {
 	out := fmt.Sprintf("address : %s , contract : %s", address, contract)
 	fmt.Println(out)
 	if got, err := contract.GetJWT(nil); err == nil {
-		fmt.Println("Expected message to be: Temp JWT. Got : ", got)
+		fmt.Println("Expected message to be: Temp JWT. Got : ", string(got))
 	}
 }
