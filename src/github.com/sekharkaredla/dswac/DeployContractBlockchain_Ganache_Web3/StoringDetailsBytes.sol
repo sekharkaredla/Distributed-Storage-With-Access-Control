@@ -3,7 +3,7 @@ pragma solidity >=0.4.22 <0.6.0;
 contract StoringDetails{
 
     bytes public JWT;
-    address owner;
+    address public owner;
 
     constructor(bytes memory initialJWT) public {
         owner = msg.sender;
