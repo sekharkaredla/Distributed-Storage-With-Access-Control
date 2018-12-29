@@ -18,7 +18,7 @@ import (
 	providers "github.com/regcostajr/go-web3/providers"
 )
 
-const GanacheURL = "127.0.0.1:8545"
+const GanacheURL = "127.0.0.1:7545"
 
 func DeployContract() (string, error) {
 	abi := StoringDetailsABI
@@ -34,23 +34,20 @@ func DeployContract() (string, error) {
 		fmt.Errorf("error getting the accounts")
 	}
 	coinbase, err := connection.Eth.GetCoinbase()
-	fmt.Println("Accounts : ", Accounts)
+	// fmt.Println("Accounts : ", Accounts)
 	transaction.From = coinbase
-	transaction.To = Accounts[3]
+	// transaction.To = coinbase
 	transaction.From = Accounts[0]
 	transaction.Data = types.ComplexString(binary)
 	transaction.Gas = big.NewInt(900000)
-	fmt.Println(transaction)
+	// fmt.Println(transaction)
 	hash, err := contract.Deploy(transaction, binary, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(hash)
+	// fmt.Println(hash)
 	transactionReceipt, err := connection.Eth.GetTransactionReceipt(hash)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(transactionReceipt.ContractAddress)
+	fmt.Println("contact address : ", transactionReceipt.ContractAddress)
 	return transactionReceipt.ContractAddress, err
 }
 
@@ -62,28 +59,26 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	priv := "2b28b237416b1e48cee1586921077a1faeaef5b8e264f7b49299cc5e697446c8"
+	priv := "6d4371b61608bc2fc68c46a238e3906e0cca4c8f7958129d57ba3cb90923ac06"
 	key, err := crypto.HexToECDSA(priv)
 	contractAddress, err := DeployContract()
 	if err != nil {
 		log.Fatal(err)
 	}
 	auth := bind.NewKeyedTransactor(key)
-	var nonce int64 = 0
-	auth.Nonce = big.NewInt(nonce)
-	fmt.Println(contractAddress)
+	// var nonce int64 = 0
+	// auth.Nonce = big.NewInt(nonce)
+	// fmt.Println(contractAddress)
 	contractAddressHex := common.HexToAddress(contractAddress[2:])
 	storingClient, err := NewStoringDetails(contractAddressHex, client)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(contractAddressHex, err)
-	//	tx, err := storingClient.SetJWT(auth, []byte("test"))
-	//	data, err := storingClient.GetJWT(nil)
-	//	if err != nil {
-	//		log.Fatal(err)
-	//	}
-	//	fmt.Printf("Pending TX: 0x%x\n", tx.Hash())
-	//	fmt.Println(string(data))
-	fmt.Println(auth, key, contractAddressHex, storingClient)
+	// fmt.Println(contractAddressHex, err)
+	_, err = storingClient.SetJWT(auth, []byte("test"))
+	data, err := storingClient.GetJWT(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("data from getJwt : ", string(data))
 }
