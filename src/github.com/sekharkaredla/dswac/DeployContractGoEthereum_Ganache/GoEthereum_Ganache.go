@@ -59,7 +59,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	priv := "6d4371b61608bc2fc68c46a238e3906e0cca4c8f7958129d57ba3cb90923ac06"
+	priv := "a9302a76be6b4e3b184f6a7cfcc72e1c7cf827fbadf9f4713a999dc9b32d0986"
 	key, err := crypto.HexToECDSA(priv)
 	contractAddress, err := DeployContract()
 	if err != nil {
