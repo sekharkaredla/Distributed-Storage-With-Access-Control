@@ -1,9 +1,10 @@
-package CreateNewUser
+package UserDetails
 
 import (
 	"encoding/hex"
 
 	"github.com/ethereum/go-ethereum/crypto"
+	IPFS "github.com/sekharkaredla/dswac/MainCode/IPFS"
 	log "github.com/sekharkaredla/dswac/MainCode/LogSetup"
 )
 
@@ -27,4 +28,8 @@ func CreateNewUser(username string) (User, error) {
 	user.PublicKey = publicKey
 	user.PrivateKey = privateKey
 	return user, nil
+}
+
+func (user User) AddNewFileToIPFS(filename string) (string, error) {
+	IPFS.AddFileToIPFS(filename)
 }
