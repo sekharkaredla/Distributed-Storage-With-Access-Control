@@ -31,5 +31,6 @@ func CreateNewUser(username string) (User, error) {
 }
 
 func (user User) AddNewFileToIPFS(filename string) (string, error) {
-	IPFS.AddFileToIPFS(filename)
+	hash, err := IPFS.AddFileToIPFS(filename)
+	return hash, err
 }
