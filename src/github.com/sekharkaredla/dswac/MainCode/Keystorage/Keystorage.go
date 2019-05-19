@@ -7,19 +7,20 @@ import (
 	log "github.com/sekharkaredla/dswac/MainCode/LogSetup"
 )
 
-type Keystore struct {
-	Store *keystore.KeyStore `json:"store"`
+var KeyStore *keystore.KeyStore
+
+func init() {
+	CreateNewKeyStore("./tmpstore")
 }
 
-func CreateNewKeyStore(pathToKeystore string) Keystore {
-	var keyStore Keystore
-	keyStore.Store = keystore.NewKeyStore(pathToKeystore, keystore.StandardScryptN, keystore.StandardScryptP)
+func CreateNewKeyStore(pathToKeystore string) error {
+	KeyStore = keystore.NewKeyStore(pathToKeystore, keystore.StandardScryptN, keystore.StandardScryptP)
 	log.Info.Println("Successfully created keystore")
-	return keyStore
+	return nil
 }
 
-func (keyStore Keystore) GenerateNewAccount(password string) (accounts.Account, error) {
-	account, err := keyStore.Store.NewAccount(password)
+func GenerateNewAccount(password string) (accounts.Account, error) {
+	account, err := KeyStore.NewAccount(password)
 	if err != nil {
 		log.Error.Panicln("Error while creating account")
 	}
@@ -27,15 +28,19 @@ func (keyStore Keystore) GenerateNewAccount(password string) (accounts.Account, 
 	return account, nil
 }
 
-func (keyStore Keystore) CreateAccountFromPrivateKey(privateKey string, password string) (accounts.Account, error) {
+func CreateAccountFromPrivateKey(privateKey string, password string) (accounts.Account, error) {
 	privateKeyECDSA, err := crypto.HexToECDSA(privateKey)
 	if err != nil {
 		log.Error.Panicln("Error converting the private key")
 	}
-	account, err := keyStore.Store.ImportECDSA(privateKeyECDSA, password)
+	account, err := KeyStore.ImportECDSA(privateKeyECDSA, password)
 	if err != nil {
 		log.Error.Panicln("Error while adding to keystore")
 	}
 	log.Info.Println("Succesfully created account with private key and password")
 	return account, err
+}
+
+func GetKeyStore() *keystore.KeyStore {
+	return KeyStore
 }
