@@ -1,12 +1,18 @@
 package main
 
 import (
+	"encoding/hex"
 	"fmt"
 
-	ganache "github.com/sekharkaredla/dswac/MainCode/Ganache"
+	crypto "github.com/ethereum/go-ethereum/crypto"
+	keystorage "github.com/sekharkaredla/dswac/MainCode/Keystorage"
 )
 
 func main() {
-	out, _ := ganache.DeployContract()
-	fmt.Println(out)
+	keyStore := keystorage.CreateNewKeyStore("./tmpstore")
+	fmt.Println(keyStore.GenerateNewAccount("pass"))
+	key, _ := crypto.GenerateKey()
+	privateKey := hex.EncodeToString(key.D.Bytes())
+	fmt.Println(keyStore.CreateAccountFromPrivateKey(privateKey, "pass"))
+	fmt.Println(keyStore.Store.Accounts())
 }
