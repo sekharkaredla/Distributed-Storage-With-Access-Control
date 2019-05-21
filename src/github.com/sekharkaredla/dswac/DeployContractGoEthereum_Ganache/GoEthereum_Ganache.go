@@ -59,7 +59,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	priv := "a9302a76be6b4e3b184f6a7cfcc72e1c7cf827fbadf9f4713a999dc9b32d0986"
+	//Here give the private key from the accounts in ganache
+	priv := "6d4371b61608bc2fc68c46a238e3906e0cca4c8f7958129d57ba3cb90923ac06"
 	key, err := crypto.HexToECDSA(priv)
 	contractAddress, err := DeployContract()
 	if err != nil {
@@ -75,7 +76,7 @@ func main() {
 		log.Fatal(err)
 	}
 	// fmt.Println(contractAddressHex, err)
-	_, err = storingClient.SetJWT(auth, []byte("test"))
+	_, err = storingClient.SetJWT(auth, []byte("you got this one"))
 	data, err := storingClient.GetJWT(nil)
 	if err != nil {
 		log.Fatal(err)
