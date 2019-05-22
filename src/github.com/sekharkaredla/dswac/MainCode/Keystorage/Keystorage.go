@@ -19,13 +19,14 @@ func CreateNewKeyStore(pathToKeystore string) error {
 	return nil
 }
 
-func GenerateNewAccount(password string) (accounts.Account, error) {
+func GenerateNewAccount(password string) (string, error) {
 	account, err := KeyStore.NewAccount(password)
 	if err != nil {
 		log.Error.Panicln("Error while creating account")
 	}
 	log.Info.Println("Succesfully created account with password")
-	return account, nil
+	keyJSON, err := KeyStore.Export(account, password, password)
+	return string(keyJSON), err
 }
 
 func CreateAccountFromPrivateKey(privateKey string, password string) (accounts.Account, error) {
