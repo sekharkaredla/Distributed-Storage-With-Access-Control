@@ -11,7 +11,7 @@ import (
 	storingContract "github.com/sekharkaredla/dswac/MainCode/StoringContract"
 )
 
-const GanacheURL = "127.0.0.1:7545"
+const GanacheURL = "http://127.0.0.1:7545"
 
 func DeployContract() (string, error) {
 	abi := storingContract.StoringDetailsABI

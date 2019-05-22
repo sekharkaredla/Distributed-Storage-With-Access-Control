@@ -3,9 +3,9 @@ package cmd
 import (
 	"fmt"
 
+	ganache "github.com/sekharkaredla/dswac/MainCode/Ganache"
 	keystore "github.com/sekharkaredla/dswac/MainCode/Keystorage"
 	log "github.com/sekharkaredla/dswac/MainCode/LogSetup"
-
 	"github.com/spf13/cobra"
 )
 
@@ -22,11 +22,13 @@ var CmdUser = &cobra.Command{
 			var password string
 			fmt.Print("enter password : ")
 			fmt.Scanln(&password)
-			userAccount, err := keystore.GenerateNewAccount(password)
+			params := make([]string, 1)
+			params[0] = password
+			data, err := keystore.GenerateNewAccount(ganache.GanacheURL, "hello")
 			if err != nil {
-				log.Error.Fatalln("unable to create user")
+				log.Error.Fatalln("unable to create user", err)
 			}
-			log.Info.Println(userAccount)
+			log.Info.Println(data)
 		} else {
 			fmt.Println("enter private key : ")
 			var privateKey string
@@ -34,11 +36,11 @@ var CmdUser = &cobra.Command{
 			fmt.Println("enter passphrase : ")
 			var passphrase string
 			fmt.Scanln(&passphrase)
-			userAccount, err := keystore.CreateAccountFromPrivateKey(privateKey, passphrase)
+			err := keystore.CreateAccountFromPrivateKey(ganache.GanacheURL, privateKey, passphrase, false)
 			if err != nil {
 				log.Error.Fatalln("unable to add user")
 			}
-			log.Info.Println(userAccount)
+			log.Info.Println(err)
 		}
 	},
 }

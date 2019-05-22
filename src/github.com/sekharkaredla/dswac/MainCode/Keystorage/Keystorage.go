@@ -1,6 +1,7 @@
 package Keystorage
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -8,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/accounts"
+	//	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/crypto"
 	log "github.com/sekharkaredla/dswac/MainCode/LogSetup"
@@ -50,38 +51,53 @@ func CreateNewKeyStore(pathToKeystore string) error {
 	return nil
 }
 
-func GenerateNewAccount(password string) (string, error) {
+func GenerateNewAccount(ganacheURL string, password string) (string, error) {
 	account, err := KeyStore.NewAccount(password)
 	if err != nil {
 		log.Error.Panicln("Error while creating account")
 	}
 	log.Info.Println("Succesfully created account with password")
 	keyJSON, err := KeyStore.Export(account, password, password)
+	key, err := keystore.DecryptKey(keyJSON, password)
+	log.Info.Println(key)
+	privateKeyConverted := hex.EncodeToString(key.PrivateKey.D.Bytes())
+	stringConverted := string(privateKeyConverted)
+	CreateAccountFromPrivateKey(ganacheURL, stringConverted, password, true)
 	return string(keyJSON), err
+
 }
 
-func CreateAccountFromPrivateKey(privateKey string, password string) (accounts.Account, error) {
+func CreateAccountFromPrivateKey(ganacheURL string, privateKey string, password string, added bool) error {
 	privateKeyECDSA, err := crypto.HexToECDSA(privateKey)
-	if err != nil {
-		log.Error.Panicln("Error converting the private key")
+	if !(added) {
+		if err != nil {
+			log.Error.Panicln("Error converting the private key")
+		}
+		_, err := KeyStore.ImportECDSA(privateKeyECDSA, password)
+		if err != nil {
+			log.Error.Panicln("Error while adding to keystore")
+		}
 	}
-	account, err := KeyStore.ImportECDSA(privateKeyECDSA, password)
-	if err != nil {
-		log.Error.Panicln("Error while adding to keystore")
-	}
+	log.Info.Println(privateKeyECDSA)
+	params := make([]string, 2)
+	params[0] = "0x" + privateKey
+	params[1] = password
+	log.Info.Println(privateKey)
 	log.Info.Println("Succesfully created account with private key and password")
-	return account, err
+	SendRequestForCreateAccount(ganacheURL, "personal_importRawKey", params)
+	return nil
 }
 
 func GetKeyStore() *keystore.KeyStore {
 	return KeyStore
 }
 
-func SendRequestForCreateAccount(ganacheURL string, v interface{}, method string, params interface{}) error {
+func SendRequestForCreateAccount(ganacheURL string, method string, params interface{}) error {
 
-	bodyString := util.JSONRPCObject{Version: "2.0", Method: method, Params: params, ID: rand.Intn(100)}
+	bodyString := JSONRPCObject{Version: "2.0", Method: method, Params: params, ID: rand.Intn(100)}
 
 	body := strings.NewReader(bodyString.AsJsonString())
+	log.Info.Println(body)
 	req, err := http.NewRequest("POST", ganacheURL, body)
 	if err != nil {
 		return err
@@ -90,7 +106,8 @@ func SendRequestForCreateAccount(ganacheURL string, v interface{}, method string
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 
-	resp, err := provider.client.Do(req)
+	var client http.Client
+	resp, err := client.Do(req)
 
 	if err != nil {
 		return err
@@ -106,7 +123,6 @@ func SendRequestForCreateAccount(ganacheURL string, v interface{}, method string
 			return err
 		}
 	}
-
-	return json.Unmarshal(bodyBytes, v)
-
+	log.Info.Println(bodyBytes, string(bodyBytes))
+	return nil
 }
