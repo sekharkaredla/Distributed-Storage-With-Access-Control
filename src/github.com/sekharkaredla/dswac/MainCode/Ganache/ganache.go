@@ -1,46 +1,61 @@
 package ganacheBlockchain
 
 import (
-	big "math/big"
-
-	web3 "github.com/regcostajr/go-web3"
-	"github.com/regcostajr/go-web3/complex/types"
-	dto "github.com/regcostajr/go-web3/dto"
-	providers "github.com/regcostajr/go-web3/providers"
+	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
+	ipfs "github.com/sekharkaredla/dswac/MainCode/IPFS"
 	log "github.com/sekharkaredla/dswac/MainCode/LogSetup"
 	storingContract "github.com/sekharkaredla/dswac/MainCode/StoringContract"
 )
 
 const GanacheURL = "http://127.0.0.1:7545"
 
-func DeployContract() (string, error) {
-	abi := storingContract.StoringDetailsABI
-	log.Info.Println("abi being used : ", abi)
-	binary := storingContract.StoringDetailsBin
-	log.Info.Println("binary of contract : ", binary)
-	log.Info.Println("connecting to ganache with URL : ", GanacheURL)
-	var connection = web3.NewWeb3(providers.NewHTTPProvider(GanacheURL, 10, false))
-	contract, err := connection.Eth.NewContract(abi)
+var SDInstance *storingContract.StoringDetails
+
+func DeployContract() error {
+	client, err := ethclient.Dial(GanacheURL)
 	if err != nil {
-		log.Error.Panicln("error creating contract instance, err : ", err)
+		log.Error.Fatalln(err)
 	}
-	transaction := new(dto.TransactionParameters)
-	_, err = connection.Eth.ListAccounts()
+	//Here give the private key from the accounts in ganache
+	privateKey, err := crypto.HexToECDSA("7cc50abd61846f182eb5fa2737751a065da74ee5323c94f265b09a477fb45c49")
 	if err != nil {
-		log.Error.Panicln("error fetching the ethereum accounts, err : ", err)
+		log.Error.Fatalln(err)
 	}
-	log.Info.Println("successfully fetched the accounts")
-	coinbase, err := connection.Eth.GetCoinbase()
-	transaction.From = coinbase
-	transaction.Data = types.ComplexString(binary)
-	transaction.Gas = big.NewInt(900000)
-	log.Info.Println("using the transaction parameters : ", transaction)
-	hash, err := contract.Deploy(transaction, binary, nil)
+	auth := bind.NewKeyedTransactor(privateKey)
+	_, _, sdInstance, err := storingContract.DeployStoringDetails(auth, client)
 	if err != nil {
-		log.Error.Panicln("error deploying the smart contract, err:", err)
+		log.Error.Fatalln(err)
 	}
-	transactionReceipt, err := connection.Eth.GetTransactionReceipt(hash)
-	log.Info.Println("transaction receipt : ", transactionReceipt)
-	log.Info.Println("contact address : ", transactionReceipt.ContractAddress)
-	return transactionReceipt.ContractAddress, err
+	SDInstance = sdInstance
+	return err
+}
+func AddFileToGanache(filepath string) (string, error) {
+	cid, err := ipfs.AddFileToIPFS(filepath)
+	if err != nil {
+		log.Error.Panicln(err)
+	}
+	log.Info.Println("successfully added to IPFS ", cid)
+	userPublicKey := "0x4e15871aFA224d13311A30822613Bb7488166DB2"
+	userPrivateKey := "7cc50abd61846f182eb5fa2737751a065da74ee5323c94f265b09a477fb45c49"
+	var mySiginingKey = []byte(userPrivateKey)
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["ownerHash"] = userPublicKey
+	claims["fileName"] = filepath
+	claims["fileHash"] = cid
+	tokenString, err := token.SignedString(mySiginingKey)
+	if err != nil {
+		log.Error.Panicln(err)
+	}
+	privateKeyECDSA, _ := crypto.HexToECDSA(userPrivateKey)
+	auth := bind.NewKeyedTransactor(privateKeyECDSA)
+	transaction, err := SDInstance.StoringDetailsTransactor.SetJWT(auth, []byte(tokenString))
+	if err != nil {
+		log.Error.Panicln(err)
+	}
+	log.Info.Println("successfully added to blockchain ", transaction)
+	return tokenString, err
 }
