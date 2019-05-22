@@ -77,7 +77,7 @@ func GetKeyStore() *keystore.KeyStore {
 	return KeyStore
 }
 
-func SendRequest(ganacheURL string, v interface{}, method string, params interface{}) error {
+func SendRequestForCreateAccount(ganacheURL string, v interface{}, method string, params interface{}) error {
 
 	bodyString := util.JSONRPCObject{Version: "2.0", Method: method, Params: params, ID: rand.Intn(100)}
 
