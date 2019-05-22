@@ -24,23 +24,23 @@ var CmdUser = &cobra.Command{
 			fmt.Scanln(&password)
 			params := make([]string, 1)
 			params[0] = password
-			data, err := keystore.GenerateNewAccount(ganache.GanacheURL, "hello")
+			publicKey, privateKey, err := keystore.GenerateNewAccount(ganache.GanacheURL, password)
 			if err != nil {
 				log.Error.Fatalln("unable to create user", err)
 			}
-			log.Info.Println(data)
-		} else {
+			log.Info.Println(publicKey, privateKey, err)
+		} else if option == 2 {
 			fmt.Println("enter private key : ")
 			var privateKey string
 			fmt.Scanln(&privateKey)
 			fmt.Println("enter passphrase : ")
 			var passphrase string
 			fmt.Scanln(&passphrase)
-			err := keystore.CreateAccountFromPrivateKey(ganache.GanacheURL, privateKey, passphrase, false)
+			publicKey, privateKey, err := keystore.CreateAccountFromPrivateKey(ganache.GanacheURL, privateKey, passphrase, false)
 			if err != nil {
 				log.Error.Fatalln("unable to add user")
 			}
-			log.Info.Println(err)
+			log.Info.Println(publicKey, privateKey, err)
 		}
 	},
 }

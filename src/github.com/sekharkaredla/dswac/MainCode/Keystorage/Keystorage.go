@@ -51,7 +51,7 @@ func CreateNewKeyStore(pathToKeystore string) error {
 	return nil
 }
 
-func GenerateNewAccount(ganacheURL string, password string) (string, error) {
+func GenerateNewAccount(ganacheURL string, password string) (string, string, error) {
 	account, err := KeyStore.NewAccount(password)
 	if err != nil {
 		log.Error.Panicln("Error while creating account")
@@ -59,15 +59,15 @@ func GenerateNewAccount(ganacheURL string, password string) (string, error) {
 	log.Info.Println("Succesfully created account with password")
 	keyJSON, err := KeyStore.Export(account, password, password)
 	key, err := keystore.DecryptKey(keyJSON, password)
-	log.Info.Println(key)
+	//log.Info.Println(key)
 	privateKeyConverted := hex.EncodeToString(key.PrivateKey.D.Bytes())
 	stringConverted := string(privateKeyConverted)
 	CreateAccountFromPrivateKey(ganacheURL, stringConverted, password, true)
-	return string(keyJSON), err
+	return crypto.PubkeyToAddress(key.PrivateKey.PublicKey).Hex(), "0x" + stringConverted, err
 
 }
 
-func CreateAccountFromPrivateKey(ganacheURL string, privateKey string, password string, added bool) error {
+func CreateAccountFromPrivateKey(ganacheURL string, privateKey string, password string, added bool) (string, string, error) {
 	privateKeyECDSA, err := crypto.HexToECDSA(privateKey)
 	if !(added) {
 		if err != nil {
@@ -77,15 +77,15 @@ func CreateAccountFromPrivateKey(ganacheURL string, privateKey string, password 
 		if err != nil {
 			log.Error.Panicln("Error while adding to keystore")
 		}
+		log.Info.Println("Succesfully created account with private key and password")
 	}
-	log.Info.Println(privateKeyECDSA)
+	//log.Info.Println(privateKeyECDSA)
 	params := make([]string, 2)
 	params[0] = "0x" + privateKey
 	params[1] = password
-	log.Info.Println(privateKey)
-	log.Info.Println("Succesfully created account with private key and password")
-	SendRequestForCreateAccount(ganacheURL, "personal_importRawKey", params)
-	return nil
+	//log.Info.Println(privateKey)
+	err = SendRequestForCreateAccount(ganacheURL, "personal_importRawKey", params)
+	return crypto.PubkeyToAddress(privateKeyECDSA.PublicKey).Hex(), "0x" + privateKey, err
 }
 
 func GetKeyStore() *keystore.KeyStore {
@@ -97,7 +97,7 @@ func SendRequestForCreateAccount(ganacheURL string, method string, params interf
 	bodyString := JSONRPCObject{Version: "2.0", Method: method, Params: params, ID: rand.Intn(100)}
 
 	body := strings.NewReader(bodyString.AsJsonString())
-	log.Info.Println(body)
+	//log.Info.Println(body)
 	req, err := http.NewRequest("POST", ganacheURL, body)
 	if err != nil {
 		return err
@@ -115,14 +115,14 @@ func SendRequestForCreateAccount(ganacheURL string, method string, params interf
 
 	defer resp.Body.Close()
 
-	var bodyBytes []byte
+	//var bodyBytes []byte
 
 	if resp.StatusCode == 200 {
-		bodyBytes, err = ioutil.ReadAll(resp.Body)
+		_, err = ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return err
 		}
 	}
-	log.Info.Println(bodyBytes, string(bodyBytes))
-	return nil
+	//log.Info.Println("body", bodyBytes, string(bodyBytes))
+	return err
 }
